@@ -16,13 +16,14 @@ def save_document_data(chrome: webdriver.Chrome, preview_url, data_file):
         "PDF_URL": ""
     }
     
+    error_file = open("error_logs.txt", "w")
+    
     # Recoger Tipo de documento
     try:
         document_type = chrome.find_element(by=By.TAG_NAME, value='h3')
         document_data["Type"] = document_type.text    
     except:
-        with open("error_logs.txt", "a") as f:
-            f.write(f"{preview_url}: Type\n")
+        error_file.write(f"{preview_url}: Type\n")
     
     # Recoger Nombre del documento
     try:
@@ -30,8 +31,7 @@ def save_document_data(chrome: webdriver.Chrome, preview_url, data_file):
         document_data["Title"] = \
             document_title.find_element(by=By.TAG_NAME, value="div").text
     except:
-        with open("error_logs.txt", "a") as f:
-            f.write(f"{preview_url}: Title\n")
+        error_file.write(f"{preview_url}: Title\n")
         
     # Miramos la tabla de datos del documento
     try:
@@ -71,8 +71,7 @@ def save_document_data(chrome: webdriver.Chrome, preview_url, data_file):
                         
                         document_data["Autor/es"] = str.join('|', authors_list)
                     except:
-                        with open("error_logs.txt", "a") as f:
-                            f.write(f"{preview_url}: Autor/es\n")
+                        error_file.write(f"{preview_url}: Autor/es\n")
                     
                 # Recoger Directo/es
                 elif section == "Director":
@@ -91,16 +90,14 @@ def save_document_data(chrome: webdriver.Chrome, preview_url, data_file):
                         
                         document_data["Director/es"] = str.join('|', directors_list)
                     except:
-                        with open("error_logs.txt", "a") as f:
-                            f.write(f"{preview_url}: Director/es\n")
+                        error_file.write(f"{preview_url}: Director/es\n")
                 
                 # Recoger Fecha de publicacion
                 elif section == "Fecha de publicación":
                     try:
                         document_data["Publicacion"] = column.text
                     except:
-                        with open("error_logs.txt", "a") as f:
-                            f.write(f"{preview_url}: Publicacion\n")
+                        error_file.write(f"{preview_url}: Publicacion\n")
                 
                 # Recoger Resumen
                 elif section == "Resumen":
@@ -133,35 +130,30 @@ def save_document_data(chrome: webdriver.Chrome, preview_url, data_file):
                             try:
                                 document_data["Resumenes"][f"Resumen_{i}"] = abstract.text
                             except:
-                                with open("error_logs.txt", "a") as f:
-                                    f.write(
-                                        f"{preview_url}: Resumen_{i}\n")
+                                error_file.write(
+                                    f"{preview_url}: Resumen_{i}\n")
                             i += 1
                     except:
-                        with open("error_logs.txt", "a") as f:
-                            f.write(f"{preview_url}: Resumenes\n")
+                        error_file.write(f"{preview_url}: Resumenes\n")
             
                 section = None
     except:
-        with open("error_logs.txt", "a") as f:
-            f.write(f"{preview_url}: Info table\n")
+        error_file.write(f"{preview_url}: Info table\n")
     
     # Recoger el enlace al documento
     try:
-        pdf_info = chrome.find_elements(
+        tabla_pdf = chrome.find_element(
             by=By.CLASS_NAME,
-            value="text-nowrap")
-        for column in pdf_info:
-            pdf_link = column.find_element(
-                by=By.TAG_NAME,
-                value="a")
-            
-            document_data["PDF_URL"] = pdf_link.get_attribute("href")
+            value="ds-table")
+        pdf_link = tabla_pdf.find_elements(
+            by=By.TAG_NAME,
+            value="a")[0]
+        document_data["PDF_URL"] = pdf_link.get_attribute("href")
     except: 
-        with open("error_logs.txt", "a") as f:
-            f.write(f"{preview_url}: PDF_URL\n")
+        error_file.write(f"{preview_url}: PDF_URL\n")
         
     data_file.write(f"{str(document_data)},\n")
+    error_file.close()
 
 if __name__ == '__main__':
     chrome_service = webdriver.ChromeService(
@@ -170,16 +162,18 @@ if __name__ == '__main__':
     	'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
     chrome = webdriver.Chrome(service=chrome_service)
     
-    downloads_path = 'D:\\'
     with open("document_preview_urls.txt", 'r') as f:
-        with open(
-                downloads_path + "documents_data.txt",
-                'w',
-                encoding='utf8'
-            ) as documents_data_file:
-            
-            try:
-                for url in f.readlines():
-                    save_document_data(chrome, url, documents_data_file)
-            except:
-                pass           
+        data_file = open("documents_data.txt", 'a', encoding='utf-8')
+        
+        total_files = 26300
+        last_file = 8557
+        
+        try:
+            for index, url in enumerate(f.readlines()[last_file:]):
+                save_document_data(chrome, url[:-1], data_file)
+                print(
+                    f"{index + last_file} ({round((index + last_file) / total_files * 100, 2)}%)")
+        except:
+            pass
+        finally:
+            data_file.close()

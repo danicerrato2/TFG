@@ -5,9 +5,7 @@ from selenium.webdriver.support.select import Select
 
 if __name__ == '__main__':
     chrome_service = webdriver.ChromeService(
-        executable_path='.\\chromedriver.exe')
-    webdriver.ChromeOptions().binary_location = \
-    	'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
+        executable_path='.\\chromedriver_123-0-6309-0.exe')
     chrome = webdriver.Chrome(service=chrome_service)
 
     # Entrar a la página

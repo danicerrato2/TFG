@@ -157,22 +157,20 @@ def save_document_data(chrome: webdriver.Chrome, preview_url, data_file):
 
 if __name__ == '__main__':
     chrome_service = webdriver.ChromeService(
-        executable_path='.\\chromedriver.exe')
-    webdriver.ChromeOptions().binary_location = \
-    	'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
+        executable_path='.\\chromedriver_123-0-6309-0.exe')
     chrome = webdriver.Chrome(service=chrome_service)
     
     with open("document_preview_urls.txt", 'r') as f:
         data_file = open("documents_data.txt", 'a', encoding='utf-8')
         
         total_files = 26300
-        last_file = 8557
+        last_file = 16693
         
         try:
             for index, url in enumerate(f.readlines()[last_file:]):
-                save_document_data(chrome, url[:-1], data_file)
                 print(
                     f"{index + last_file} ({round((index + last_file) / total_files * 100, 2)}%)")
+                save_document_data(chrome, url[:-1], data_file)
         except:
             pass
         finally:

@@ -164,12 +164,11 @@ if __name__ == '__main__':
         data_file = open("documents_data.txt", 'a', encoding='utf-8')
         
         total_files = 26300
-        last_file = 16693
         
         try:
-            for index, url in enumerate(f.readlines()[last_file:]):
+            for index, url in enumerate(f.readlines()):
                 print(
-                    f"{index + last_file} ({round((index + last_file) / total_files * 100, 2)}%)")
+                    f"{index} ({round(index / total_files * 100, 2)}%)")
                 save_document_data(chrome, url[:-1], data_file)
         except:
             pass

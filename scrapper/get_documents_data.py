@@ -1,6 +1,5 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.select import Select
 
 def save_document_data(chrome: webdriver.Chrome, preview_url, data_file):
     chrome.get(preview_url)

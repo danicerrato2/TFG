@@ -3,6 +3,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 
 
+documents_path = "../documents/"
+previews_filename = "document_preview_urls.txt"
+
 if __name__ == '__main__':
     chrome_service = webdriver.ChromeService(
         executable_path='.\\chromedriver_123-0-6309-0.exe')
@@ -12,7 +15,7 @@ if __name__ == '__main__':
     chrome.get('https://idus.us.es/handle/11441/11441/browse?type=dateissued')
 
     document_preview_urls = []
-    preview_urls_file = open("document_preview_urls.txt", "w")
+    preview_urls_file = open(documents_path + previews_filename, "w")
     try:
         # Seleccionar el año
         year_browser = chrome.find_element(by=By.NAME, value="year")

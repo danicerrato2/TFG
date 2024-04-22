@@ -3,21 +3,47 @@ import time
 import undetected_chromedriver as uc
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 
-chrome = uc.Chrome()
+DOCUMENTS_PATH = "../documents/"
+SPANISH_ABSTRACTS_FILENAME = "spanish_abstracts.txt"
+REWRITTEN_SPANISH_ABSTRACTS_FILENAME = "rewritten_spanish_abstracts.txt"
+
+CHAT_ROLE_PROMPT = "Voy a pasarte varios textos. Tu tarea consiste en comprender y reescribir esos textos con tus palabras."
+MAX_SIZE = 3000
+
+chrome = None
+input_area = None
 prompt_area = None
-send_prompt_button = None
 
-spanish_abstracts_file = \
-    open("spanish_abstracts.txt", "r", encoding='utf-8')
-rewritten_spanish_abstracts_file = \
-    open("rewritten_spanish_abstracts.txt", "a", encoding='utf-8')
+spanish_abstracts_file = open(
+    DOCUMENTS_PATH + SPANISH_ABSTRACTS_FILENAME,
+    "r",
+    encoding='utf-8'
+)
+rewritten_spanish_abstracts_file = open(
+    DOCUMENTS_PATH + REWRITTEN_SPANISH_ABSTRACTS_FILENAME,
+    "a",
+    encoding='utf-8'
+)
 
-MESSAGE_END = "Se acabó el juego"
+# TWILIO_SID = 'AC6811a181b4b295601844d0a392573fe7'
+# TWILIO_TOKEN = 'c3d8079ef5b777292ed39265711e5283'
+# TWILIO_PHONE_NUMBER = '+12513135476'
 
-CHAT_ROLE_PROMPT = f"Voy a pasarte varios textos. Tu tarea consiste en comprender y reescribir esos textos con tus palabras. Cuando te escriba el mensaje '{MESSAGE_END}', tu tarea habrá terminado. Si lo has comprendido, escribe el mensaje de finalización"
+def initiate_chat(account_option: int):
+    chrome = login(account_option)
 
-def login():
+    prompt_area = chrome.find_element(By.TAG_NAME, "textarea")
+    input_area = prompt_area.find_element(By.XPATH, "..")
+    
+    send_message(CHAT_ROLE_PROMPT, prompt_area, input_area)
+    
+    return prompt_area, input_area
+
+def login(account_option: int):
+    chrome.get("https://chat.openai.com/chat")
+    
     login_button = chrome.find_elements(By.TAG_NAME, "button")[0]
     login_button.click()
     
@@ -29,7 +55,10 @@ def login():
     time.sleep(2)
     
     email_input = chrome.find_element(By.NAME, "identifier")
-    email_input.send_keys("danicerrato2000")
+    if account_option == 0:
+        email_input.send_keys("danicerrato2")
+    else:
+        email_input.send_keys("dcstfg2000")
     
     for button in chrome.find_elements(By.TAG_NAME, "button"):
         try:
@@ -43,7 +72,11 @@ def login():
     time.sleep(5)
     
     passwd_input = chrome.find_element(By.NAME, "Passwd")
-    passwd_input.send_keys("Acertaste2?")
+    if account_option == 0:
+        passwd_input.send_keys("DaniCerraCrack2?")
+    else:
+        passwd_input.send_keys("hasacertado")
+    
     
     for button in chrome.find_elements(By.TAG_NAME, "button"):
         try:
@@ -55,49 +88,88 @@ def login():
             pass
 
     time.sleep(15)
+    
+    return chrome
 
-def send_message(text: str) -> str:
+def send_message(
+    text: str,
+    prompt_area: WebElement,
+    input_area: WebElement
+):  
+    time_to_wait = len(text) / MAX_SIZE * 15
+    if time_to_wait < 5:    
+        time_to_wait = 5
+    
+    print("Escribiendo texto...")
     prompt_area.clear()
     prompt_area.send_keys(text)
+    
+    print("Enviando....")
+    send_prompt_button = input_area.find_element(By.TAG_NAME, "button")
     send_prompt_button.click()
+    time.sleep(time_to_wait + 5)
     
-    time.sleep(20)
+    print("Leyendo respuesta...")
+    response_div = chrome.find_elements(By.CLASS_NAME, "markdown")[-1]
     
-    response_div = chrome.find_elements(By.CLASS_NAME, "agent-turn")[-1]
-    response = response_div.find_element(By.TAG_NAME, "p")
-    
-    return response.text
-
-if __name__ == '__main__':
-    chrome.get("https://chat.openai.com/chat")
-    
-    try:
-        login()
-
-        prompt_area = chrome.find_element(By.TAG_NAME, "textarea")
-        input_area = prompt_area.find_element(By.XPATH, "..")
-        send_prompt_button = \
-            input_area.find_element(By.TAG_NAME, "button")
-            
-        response = send_message(CHAT_ROLE_PROMPT)
-        if not response.__contains__(MESSAGE_END):
-            print("No continuar")
-            exit()
+    return response_div.text
         
-        for abstract_data_row in spanish_abstracts_file.readlines():
-            try:
+if __name__ == '__main__':    
+    try:    
+        num_abstracts = 0
+        last_abstract = 1315
+        max_abstracts = 1400
+        num_session_abstracts = 0
+        
+        account_option = 0
+        chrome = uc.Chrome()
+        prompt_area, input_area = initiate_chat(account_option)
+            
+        for abstract_data_row in spanish_abstracts_file.readlines()[::-1]:
+            
+            if len(abstract_data_row) > MAX_SIZE:
+                    continue
+            
+            num_abstracts += 1
+            if num_abstracts <= last_abstract:
+                continue
+            
+            num_session_abstracts += 1
+            if num_session_abstracts > 40:
+                chrome.close()
+                chrome.quit()
+                num_session_abstracts = 0
+                
+                account_option = (account_option + 1) % 2
+                chrome = uc.Chrome()
+                prompt_area, input_area = initiate_chat(account_option)
+            
+            try:       
+                perc = round(num_abstracts / max_abstracts * 100, 2)  
+                print(f"\n{num_abstracts} - ({perc}%)")
+                
                 abstract_data = json.loads(abstract_data_row[:-2])
                 
-                abstract_data["Resumen_ChatGPT"] = \
-                    send_message(abstract_data["Resumen"])
+                current_time = time.strftime("%H:%M:%S", time.gmtime())
+                print(f"{current_time}")
+                
+                abstract_data["Resumen_ChatGPT"] = send_message(
+                    abstract_data["Resumen"],
+                    prompt_area,
+                    input_area)
                 
                 rewritten_spanish_abstracts_file.write(
                     f"{str(abstract_data)},\n"
                 )
+                
+                if num_abstracts == max_abstracts:
+                    break
+                
             except:
-                pass
-        
+                break
+            
     finally:
+        rewritten_spanish_abstracts_file.close()
         spanish_abstracts_file.close()
         chrome.close()
         chrome.quit()

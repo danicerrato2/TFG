@@ -1,11 +1,26 @@
 import langid
 import json
 
-documents_data_file = open("../documents_data.txt", "r", encoding="utf-8")
-spanish_abstracts_file = \
-    open("spanish_abstracts.txt", "a", encoding='utf-8')
-other_language_abstracts_file = \
-    open("other_language_abstracts.txt", "a", encoding='utf-8')
+documents_path = "../documents/"
+documents_data_filename = "../documents_data.txt"
+spanish_abstracts_filename = "spanish_abstracts.txt"
+other_language_abstracts_filename = "other_language_abstracts.txt"
+
+documents_data_file = open(
+    documents_path + documents_data_filename,
+    "r",
+    encoding="utf-8"
+)
+spanish_abstracts_file = open(
+    documents_path + spanish_abstracts_filename,
+    "a",
+    encoding='utf-8'
+)
+other_language_abstracts_file = open(
+    documents_path + other_language_abstracts_filename,
+    "a",
+    encoding='utf-8'
+)
 
 if __name__ == '__main__':
     for document_data_row in documents_data_file.readlines():

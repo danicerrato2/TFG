@@ -1,9 +1,12 @@
 import json
 import time
 import undetected_chromedriver as uc
+import configparser
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
+
+CONFIG_FILE_NAME = "../../scrapper.ini"
 
 DOCUMENTS_PATH = "../documents/"
 SPANISH_ABSTRACTS_FILENAME = "spanish_abstracts.txt"
@@ -11,6 +14,8 @@ REWRITTEN_SPANISH_ABSTRACTS_FILENAME = "rewritten_spanish_abstracts.txt"
 
 CHAT_ROLE_PROMPT = "Voy a pasarte varios textos. Tu tarea consiste en comprender y reescribir esos textos con tus palabras."
 MAX_SIZE = 3000
+
+config = None
 
 chrome = None
 input_area = None
@@ -26,10 +31,6 @@ rewritten_spanish_abstracts_file = open(
     "a",
     encoding='utf-8'
 )
-
-# TWILIO_SID = 'AC6811a181b4b295601844d0a392573fe7'
-# TWILIO_TOKEN = 'c3d8079ef5b777292ed39265711e5283'
-# TWILIO_PHONE_NUMBER = '+12513135476'
 
 def initiate_chat(account_option: int):
     chrome = login(account_option)
@@ -56,9 +57,9 @@ def login(account_option: int):
     
     email_input = chrome.find_element(By.NAME, "identifier")
     if account_option == 0:
-        email_input.send_keys("danicerrato2")
+        email_input.send_keys(config["USERS"]["USER1"])
     else:
-        email_input.send_keys("dcstfg2000")
+        email_input.send_keys(config["USERS"]["USER2"])
     
     for button in chrome.find_elements(By.TAG_NAME, "button"):
         try:
@@ -73,9 +74,9 @@ def login(account_option: int):
     
     passwd_input = chrome.find_element(By.NAME, "Passwd")
     if account_option == 0:
-        passwd_input.send_keys("DaniCerraCrack2?")
+        passwd_input.send_keys(config["USERS"]["PASSWD1"])
     else:
-        passwd_input.send_keys("hasacertado")
+        passwd_input.send_keys(config["USERS"]["PASSWD2"])
     
     
     for button in chrome.find_elements(By.TAG_NAME, "button"):
@@ -115,16 +116,19 @@ def send_message(
     return response_div.text
         
 if __name__ == '__main__':    
+    config = configparser.ConfigParser()
+    config.read(CONFIG_FILE_NAME)
+    
     try:    
         num_abstracts = 0
-        last_abstract = 1315
-        max_abstracts = 1400
+        last_abstract = 0
+        max_abstracts = 0
         num_session_abstracts = 0
         
         account_option = 0
         chrome = uc.Chrome()
         prompt_area, input_area = initiate_chat(account_option)
-            
+
         for abstract_data_row in spanish_abstracts_file.readlines()[::-1]:
             
             if len(abstract_data_row) > MAX_SIZE:

@@ -1,5 +1,6 @@
 import json
 import language_tool_python
+import nltk
 
 # from spellchecker import SpellChecker
 
@@ -21,10 +22,12 @@ rewritten_spanish_abstracts_stats_file = open(
     encoding='utf-8'
 )
 
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.tag import pos_tag
+
 if __name__ == '__main__':
-    # checker = SpellChecker(language='es')
-    tool = language_tool_python.LanguageTool('es-ES')
-    is_bad_rule = lambda rule: rule.message == 'Possible spelling mistake found.' and len(rule.replacements) and rule.replacements[0][0].isupper()
+    # print(nltk.help.upenn_tagset())
     
     for abstract_data_row in rewritten_spanish_abstracts_file.readlines():
         abstract_data = json.loads(abstract_data_row[:-2])
@@ -37,25 +40,9 @@ if __name__ == '__main__':
         
         original_abstract = abstract_data["Resumen"]
         
-        matches = tool.check(original_abstract)    
-        matches = [rule for rule in matches if not is_bad_rule(rule)]
-        corrected_abstract = \
-            language_tool_python.utils.correct(original_abstract, matches)
-        print(corrected_abstract)
+        tokens = word_tokenize(original_abstract)
+        etiquetas_gramaticales = pos_tag(tokens)
         
-        # just_spaces_original_abstract = original_abstract
-        # for mark in PUNCTUATION_MARKS:
-        #     just_spaces_original_abstract = \
-        #         just_spaces_original_abstract.replace(mark, " ")
-        
-        # original_abstract_words = just_spaces_original_abstract.split()
-        # print(original_abstract_words)
-                
-        # misspelled = checker.unknown(original_abstract_words)
-        # print(misspelled, "\n\n")
-        # for word in misspelled:
-        #     print(checker.correction(word))
+        print(etiquetas_gramaticales)
             
         break
-    
-    tool.close()

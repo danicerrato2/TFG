@@ -29,7 +29,7 @@ def merge_stats(stats: dict, merged_stats: dict):
 def print_plot(stat: str, original_stats: list, chatGPT_stats: list):
 	global binwidth, bandwidth_original, bandwidth_chatGPT, min_range, max_range
 
-	num_abstracts = len(original_stats)
+	num_points = max(len(original_stats), len(chatGPT_stats))
 	original = np.array(original_stats)
 	chatGPT = np.array(chatGPT_stats)
 	x = np.arange(min_range, max_range, binwidth)
@@ -40,7 +40,7 @@ def print_plot(stat: str, original_stats: list, chatGPT_stats: list):
 
 	kde = KernelDensity(kernel="gaussian").fit(original[:, None])
 	log_dens_original = kde.score_samples(x[:, None])
-	original_y = binwidth * num_abstracts * np.exp(log_dens_original)
+	original_y = binwidth * num_points * np.exp(log_dens_original)
 
 	plt.plot(x, original_y)
 
@@ -50,7 +50,7 @@ def print_plot(stat: str, original_stats: list, chatGPT_stats: list):
 
 	kde = KernelDensity(kernel="gaussian", bandwidth=bandwidth_chatGPT).fit(chatGPT[:, None])
 	log_dens_chatGPT = kde.score_samples(x[:, None])
-	chatGPT_y = binwidth * num_abstracts * np.exp(log_dens_chatGPT)
+	chatGPT_y = binwidth * num_points * np.exp(log_dens_chatGPT)
 
 	plt.plot(x, chatGPT_y)
 
@@ -58,7 +58,9 @@ def print_plot(stat: str, original_stats: list, chatGPT_stats: list):
 	plt.plot(x, original_y, label=f"original (bandw={bandwidth_original})")
 	plt.plot(x, chatGPT_y, label=f"chatGPT (bandw={bandwidth_chatGPT})")
 	plt.legend()
-	plt.title(f"{stat} ({num_abstracts} resúmenes) binw={binwidth}")
+	plt.title(f"{stat} ({num_points} valores) binw={binwidth}")
+	plt.xlabel(stat)
+	plt.ylabel("Cantidad")
 
 	plt.show()
 
@@ -105,4 +107,4 @@ if __name__ == '__main__':
 		elif command[0] == 'show':
 			print_plot(key, original_stats[key], chatGPT_stats[key])
 		elif command[0] == 'data':
-			print("\n" + original_stats[key] + "\n\n" + chatGPT_stats[key] + "\n")
+			print("\n" + str(original_stats[key]) + "\n\n" + str(chatGPT_stats[key]) + "\n")

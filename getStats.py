@@ -201,20 +201,14 @@ def get_stats(text, text_type):
          
     return stats
 
-if __name__ == '__main__':
-    last_abstract = 1000
-    
+if __name__ == '__main__':    
     download_nltk_resources()
 
     abstract_data_rows = rewritten_spanish_abstracts_file.readlines()
     rewritten_spanish_abstracts_file.close()
     num_abstracts = len(abstract_data_rows)
     
-    for i, abstract_data_row in enumerate(abstract_data_rows):
-
-        if i < last_abstract:
-            continue
-        
+    for i, abstract_data_row in enumerate(abstract_data_rows):        
         print(f"Abstract {i + 1} ({round(((i + 1) / num_abstracts) * 100, 2)}%)")
         try:
             abstract_data = json.loads(abstract_data_row[:-2])

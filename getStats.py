@@ -8,7 +8,6 @@ REWRITTEN_SPANISH_ABSTRACTS_FILENAME = "rewritten_spanish_abstracts.txt"
 SPANISH_ABSTRACTS_STATS_FILENAME = "spanish_abstracts_stats.txt"
 SPANISH_ORIGINAL_WORDS_FILE = "spanish_original_words.txt"
 SPANISH_CHATGPT_WORDS_FILE = "spanish_chatgpt_words.txt"
-ERROR_LOG_FILE = "error.log"
 
 IS_BAD_RULE = lambda rule: \
     rule.message == 'Possible spelling mistake found.'\
@@ -38,8 +37,6 @@ spanish_chatGPT_words_file = open(
     "a",
     encoding='utf-8'
 )
-
-error_log_file = open(ERROR_LOG_FILE, "a", encoding='utf-8')
 
 original_used_words = {}
 chat_GPT_used_words = {}
@@ -205,7 +202,7 @@ def get_stats(text, text_type):
     return stats
 
 if __name__ == '__main__':
-    last_abstract = 741
+    last_abstract = 1000
     
     download_nltk_resources()
 
@@ -217,9 +214,6 @@ if __name__ == '__main__':
 
         if i < last_abstract:
             continue
-        
-        if final_abstract < i:
-            break
         
         print(f"Abstract {i + 1} ({round(((i + 1) / num_abstracts) * 100, 2)}%)")
         try:
@@ -244,9 +238,9 @@ if __name__ == '__main__':
             print("Stats saved")
             
         except Exception as exception:
-            error_log_file.write(f"Error en abstract {i}\n{exception}")
+            print(f"Error en abstract {i}\n{exception}")
 
-    error_log_file.close()
+
     spanish_abstracts_stats_file.close()
     spanish_original_words_file.close()
     spanish_chatGPT_words_file.close()

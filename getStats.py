@@ -44,6 +44,8 @@ error_log_file = open(ERROR_LOG_FILE, "a", encoding='utf-8')
 original_used_words = {}
 chat_GPT_used_words = {}
 
+tool = language_tool_python.LanguageTool('es-ES')
+
 ###
 # Downloads the necessary resources of 'nltk' library
 ###
@@ -115,7 +117,7 @@ def get_words_stats(cleaned_words, stop_words):
 # Gets the number of corrections using 'LanguageTool' of 'language_tool_python' library
 ###
 def get_num_corrections(text):
-    tool = language_tool_python.LanguageTool('es-ES')
+    global tool
     matches = tool.check(text)
     matches = [rule for rule in matches if not IS_BAD_RULE(rule)]
     
@@ -203,7 +205,7 @@ def get_stats(text, text_type):
     return stats
 
 if __name__ == '__main__':
-    last_abstract = 238
+    last_abstract = 741
     
     download_nltk_resources()
 
@@ -215,6 +217,9 @@ if __name__ == '__main__':
 
         if i < last_abstract:
             continue
+        
+        if final_abstract < i:
+            break
         
         print(f"Abstract {i + 1} ({round(((i + 1) / num_abstracts) * 100, 2)}%)")
         try:

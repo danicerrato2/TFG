@@ -38,7 +38,7 @@ def print_plot(stat: str, original_stats: list, chatGPT_stats: list):
 	plt.hist(original, bins=x)
 	plt.title("original")
 
-	kde = KernelDensity(kernel="gaussian").fit(original[:, None])
+	kde = KernelDensity(kernel="gaussian", bandwidth=bandwidth_original).fit(original[:, None])
 	log_dens_original = kde.score_samples(x[:, None])
 	original_y = binwidth * num_points * np.exp(log_dens_original)
 
@@ -68,6 +68,11 @@ def show_keys(list_keys: list):
 	for i, key in enumerate(list_keys):
 		print(f"{i}: {key}")
 	print("Elige un numero:")
+
+def print_configuration():
+    print(f"Range: {min_range} - {max_range}")
+    print(f"Binwidth: {binwidth}")
+    print(f"Bandwidth: {bandwidth_original} (original) - {bandwidth_chatGPT} (chatGPT)")
 
 if __name__ == '__main__':
 	original_stats = {}
@@ -108,3 +113,5 @@ if __name__ == '__main__':
 			print_plot(key, original_stats[key], chatGPT_stats[key])
 		elif command[0] == 'data':
 			print("\n" + str(original_stats[key]) + "\n\n" + str(chatGPT_stats[key]) + "\n")
+		elif command[0] == 'config':
+			print_configuration()

@@ -12,17 +12,46 @@ bandwidth_chatGPT = 0.25
 min_range = 0
 max_range = 249
 
+def get_key_group(key: str):
+    if len(key) > 4:
+        return key
+    
+    match key:
+        case "WRB" | "RB" | "RBS" | "RBR":
+            return "Adverbios"
+        case "WP$" | "WP" | "PRP$" | "PRP":
+            return "Pronombres"
+        case "WDT" | "PDT" | "DT":
+            return "Determinantes"
+        case "VBZ" | "VBP" | "VBN" | "VBG" | "VBD" | "VB":
+            return "Verbos"
+        case "NNS" | "NNP" | "NN" | "NNPS":
+            return "Nombres"
+        case "JJS" | "JJR" |"JJ":
+            return "Adjetivos"
+        case "LS":
+            return "Listado"
+        case "IN":
+            return "Preposiciones"
+        case "CD":
+            return "Numeros"
+        case "UH" | "TO" | "RP" | "POS" | "MD" | "EX" | "CC":
+            return "Otros"
+        case _:
+            return key
+
 def merge_stats(stats: dict, merged_stats: dict):
 	for key in stats.keys():
 		if isinstance(stats[key], dict):
 			merged_stats = merge_stats(stats[key], merged_stats)
 		else:
-			if key not in merged_stats.keys():
-				merged_stats[key] = []
+			group_key = get_key_group(key)
+			if group_key not in merged_stats.keys():
+				merged_stats[group_key] = []
 			if isinstance(stats[key], list):
-				merged_stats[key].extend(stats[key])
+				merged_stats[group_key].extend(stats[key])
 			else:
-				merged_stats[key].append(stats[key])
+				merged_stats[group_key].append(stats[key])
 	
 	return merged_stats
 
@@ -85,7 +114,7 @@ if __name__ == '__main__':
 		original_stats = merge_stats(stats["Resumen"], original_stats)
 		chatGPT_stats = merge_stats(stats["Resumen_ChatGPT"], chatGPT_stats)
 
-	keys = list(original_stats.keys())
+	keys = list(set(original_stats.keys()).union(chatGPT_stats.keys()))
 	keys.sort(reverse=True)
 	
 	show_keys(keys)

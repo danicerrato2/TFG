@@ -37,29 +37,29 @@ def clean_text(text):
     return cleaned_words
 
 if __name__ == '__main__':
-    # nltk.help.upenn_tagset()
+    nltk.help.upenn_tagset()
 
     # download_resources()
     
-    for abstract_data_row in rewritten_spanish_abstracts_file.readlines():
-        abstract_data = json.loads(abstract_data_row[:-2])
-        abstracts_stats = {
-			"Idus_URL": abstract_data["Idus_URL"],
-			"id": abstract_data["id"],
-			"Resumen": {},
-			"Resumen_ChatGPT": {}
-		}
+    # for abstract_data_row in rewritten_spanish_abstracts_file.readlines():
+    #     abstract_data = json.loads(abstract_data_row[:-2])
+    #     abstracts_stats = {
+	# 		"Idus_URL": abstract_data["Idus_URL"],
+	# 		"id": abstract_data["id"],
+	# 		"Resumen": {},
+	# 		"Resumen_ChatGPT": {}
+	# 	}
         
-        original_abstract = abstract_data["Resumen"]
+    #     original_abstract = abstract_data["Resumen"]
         
         
-        tokens = nltk.word_tokenize(original_abstract)
-        sentences = nltk.sent_tokenize(original_abstract)
-        cleaned_text = clean_text(original_abstract)
+    #     tokens = nltk.word_tokenize(original_abstract)
+    #     sentences = nltk.sent_tokenize(original_abstract)
+    #     cleaned_text = clean_text(original_abstract)
 
-        print(sentences)
+    #     print(sentences)
 
         # freqs = nltk.FreqDist(tokens)
         # print(freqs)        
             
-        break
+        # break

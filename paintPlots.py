@@ -10,48 +10,19 @@ binwidth = 10
 bandwidth_original = 0.25
 bandwidth_chatGPT = 0.25
 min_range = 0
-max_range = 249
-
-def get_key_group(key: str):
-    if len(key) > 4:
-        return key
-    
-    match key:
-        case "WRB" | "RB" | "RBS" | "RBR":
-            return "Adverbios"
-        case "WP$" | "WP" | "PRP$" | "PRP":
-            return "Pronombres"
-        case "WDT" | "PDT" | "DT":
-            return "Determinantes"
-        case "VBZ" | "VBP" | "VBN" | "VBG" | "VBD" | "VB":
-            return "Verbos"
-        case "NNS" | "NNP" | "NN" | "NNPS":
-            return "Nombres"
-        case "JJS" | "JJR" |"JJ":
-            return "Adjetivos"
-        case "LS":
-            return "Listado"
-        case "IN":
-            return "Preposiciones"
-        case "CD":
-            return "Numeros"
-        case "UH" | "TO" | "RP" | "POS" | "MD" | "EX" | "CC":
-            return "Otros"
-        case _:
-            return key
+max_range = 1
 
 def merge_stats(stats: dict, merged_stats: dict):
 	for key in stats.keys():
 		if isinstance(stats[key], dict):
 			merged_stats = merge_stats(stats[key], merged_stats)
 		else:
-			group_key = get_key_group(key)
-			if group_key not in merged_stats.keys():
-				merged_stats[group_key] = []
+			if key not in merged_stats.keys():
+				merged_stats[key] = []
 			if isinstance(stats[key], list):
-				merged_stats[group_key].extend(stats[key])
+				merged_stats[key].extend(stats[key])
 			else:
-				merged_stats[group_key].append(stats[key])
+				merged_stats[key].append(stats[key])
 	
 	return merged_stats
 
@@ -116,11 +87,11 @@ if __name__ == '__main__':
 
 	keys = list(set(original_stats.keys()).union(chatGPT_stats.keys()))
 	keys.sort(reverse=True)
-	
+ 
 	show_keys(keys)
 	key_number = input()
 	key = keys[int(key_number)]
-	while True:		
+	while True:
 		command = input("Siguiente comando: ").split()
 		if len(command) == 0:
 			continue
@@ -130,9 +101,9 @@ if __name__ == '__main__':
 			key = keys[int(key_number)]
 		elif command[0] == "exit":
 			exit()
-		elif command[0] == 'binwidth':
+		elif command[0] == 'bin':
 			binwidth = float(command[1])
-		elif command[0] == 'bandwidth':
+		elif command[0] == 'band':
 			bandwidth_original = float(command[1])
 			bandwidth_chatGPT = float(command[2])
 		elif command[0] == 'range':

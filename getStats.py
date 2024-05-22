@@ -74,18 +74,63 @@ def separate_text(text):
     return cleaned_words, stop_words, punctuation_marks
 
 ###
+# Gets the grammar group of the grammar type
+###
+def get_grammar_group(tag: str):
+    match tag:
+        case "WRB" | "RB" | "RBS" | "RBR":
+            return "Adverbios"
+        case "WP$" | "WP" | "PRP$" | "PRP":
+            return "Pronombres"
+        case "WDT" | "PDT" | "DT":
+            return "Determinantes"
+        case "VBZ" | "VBP" | "VBN" | "VBG" | "VBD" | "VB":
+            return "Verbos"
+        case "NNS" | "NNP" | "NN" | "NNPS":
+            return "Nombres"
+        case "JJS" | "JJR" |"JJ":
+            return "Adjetivos"
+        case "LS":
+            return "Listado"
+        case "IN":
+            return "Preposiciones"
+        case "CD":
+            return "Numeros"
+        case "SYM":
+            return "Simbolo"
+        case ",":
+            return "Coma"
+        case ".":
+            return "Final"
+        case ":":
+            return "Elipsis"
+        case _:
+            return "Otros"
+
+###
 # Gets the word grammar types appearances
 ###
 def get_grammar_types_count(words, num_words):
-    grammar_types = {}
-    tags = []
+    grammar_types = {
+        "Adverbios": 0,
+        "Pronombres": 0,
+        "Determinantes": 0,
+        "Verbos": 0,
+        "Nombres": 0,
+        "Adjetivos": 0,
+        "Listado": 0,
+        "Preposiciones": 0,
+        "Numeros": 0,
+        "Simbolo": 0,
+        "Coma": 0,
+        "Final": 0,
+        "Elipsis": 0,
+        "Otros": 0
+    }
     
     for _, tag in nltk.pos_tag(words):
-        if tag not in tags:
-            tags.append(tag)
-            grammar_types[tag] = 1
-        else:
-            grammar_types[tag] += 1    
+        tag_group = get_grammar_group(tag)
+        grammar_types[tag_group] += 1    
             
     for grammar_type in grammar_types.keys():
         grammar_types[grammar_type] /= num_words
@@ -103,10 +148,8 @@ def get_words_stats(cleaned_words, stop_words):
     num_words = num_cleaned_words + num_stop_words
     
     words_stats["Num_Palabras"] = num_words
-    words_stats["Num_Importantes"] = num_cleaned_words / num_words
-    words_stats["Num_No_Importantes"] = num_stop_words / num_words
-    words_stats["Num_Importates_Distintas"] = len(set(cleaned_words)) / num_cleaned_words
-    words_stats["Tipos"] = get_grammar_types_count(cleaned_words, num_cleaned_words)
+    words_stats["Num_Palabras_Distintas"] = len(set(cleaned_words)) / num_words
+    words_stats["Tipos"] = get_grammar_types_count(cleaned_words, num_words)
     
     return words_stats
 
@@ -127,8 +170,6 @@ def get_marks_stats(punctuation_marks, text_len):
     marks_stats = {}    
     
     marks_stats["Num_Signos"] = len(punctuation_marks) / text_len
-    for mark in string.punctuation:
-        marks_stats[mark] = punctuation_marks.count(mark) / text_len
         
     return marks_stats
 
@@ -137,30 +178,23 @@ def get_marks_stats(punctuation_marks, text_len):
 ###
 def get_sentences_stats(text, num_text_words):
     sentences_stats = {}
-    sentences_stats["Num_Palabras"] = []
-    sentences_stats["Num_Caracteres"] = []
+    sentences_stats["Num_Palabras_Frase"] = []
+    sentences_stats["Num_Palabras_Frase_Norm"] = []
+    sentences_stats["Num_Caracteres_Frase"] = []
     
     text_len = len(text)
     sentences = nltk.sent_tokenize(text)
+    num_sentences = len(sentences)
     
-    sentences_stats["Num_Frases"] = len(sentences) / text_len
+    sentences_stats["Num_Frases"] = num_sentences
+    sentences_stats["Num_Frases_Norm"] = num_sentences / num_text_words
     for sentence in sentences:
-        sentences_stats["Num_Caracteres"].append(len(sentence) / text_len)
-        sentences_stats["Num_Palabras"].append(len(nltk.word_tokenize(sentence)) / num_text_words)
+        num_sentence_words = len(nltk.word_tokenize(sentence))
+        sentences_stats["Num_Caracteres_Frase"].append(len(sentence) / text_len)
+        sentences_stats["Num_Palabras_Frase"].append(num_sentence_words)
+        sentences_stats["Num_Palabras_Frase_Norm"].append(num_sentence_words / num_text_words)
         
-    return sentences_stats
-
-###
-# Add words list appearances into the global words appearances
-###
-def add_words_appearances(words, used_words):
-    for word in words:
-        try:
-            used_words[word] += 1
-        except Exception:
-            used_words[word] = 1
-    
-    return used_words      
+    return sentences_stats 
 
 ###
 # Gets all the stats
@@ -174,7 +208,7 @@ def get_stats(text, text_type):
         num_words = len(cleaned_words) + len(stop_words)
         
         error_code = 1
-        stats["Longitud"] = len(text)
+        stats["Num_Caracteres"] = len(text)
         
         error_code = 2
         stats["Palabras"] = get_words_stats(cleaned_words, stop_words)
@@ -183,7 +217,7 @@ def get_stats(text, text_type):
         stats["Palabras"]["Correcciones"] = get_num_corrections(text) / num_words
         
         error_code = 4
-        stats["Signos"] = get_marks_stats(punctuation_marks, stats["Longitud"])
+        stats["Signos"] = get_marks_stats(punctuation_marks, stats["Num_Caracteres"])
         
         error_code = 5
         stats["Frases"] = get_sentences_stats(text, num_words)
